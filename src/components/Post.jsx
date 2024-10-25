@@ -1,38 +1,50 @@
+import PropTypes from 'prop-types'
+import { format, formatDistanceToNow } from 'date-fns'
+import { es } from 'date-fns/locale/es'
+
 import { Avatar } from './Avatar'
 import { Comment } from './Comment'
 
 import styles from './Post.module.css'
 
-export function Post() {
+export function Post({ author, content, publishedAt }) {
+    const publishedDateFormatted = format(publishedAt, "dd 'de' MMMM 'de' Y 'a las' HH:mm'h'", {
+        locale: es
+    })
+
+    const publishedDateRElativeToNow = formatDistanceToNow(publishedAt, {
+        locale: es,
+        addSuffix: true
+    })
+
     return (
         <article className={styles.post}>
             <header>
                 <div className={styles.author}>
-                    <Avatar src="https://github.com/esiammd.png" />
+                    <Avatar src={author.avatarUrl} />
                     
                     <div className={styles.authorInfo}>
-                        <strong>Maíse Damasceno</strong>
-                        <span>Desarrolladora Fullstack</span>
+                        <strong>{author.name}</strong>
+                        <span>{author.role}</span>
                     </div>
                 </div>
 
                 <time
-                    title="22 de Octubre de 20224 a las 16:05h"
-                    dateTime="2024-10-22 16:05:00"
+                    title={publishedDateFormatted}
+                    dateTime={publishedAt.toISOString()}
                 >
-                    Publicado hace 1h
+                    {publishedDateRElativeToNow}
                 </time>
             </header>
 
             <div className={styles.content}>
-                <p>Hola a todos 👋</p>
-                <p>Acabo de subir otro proyecto a mi portafolio. El nombre del proyecto es Ignite Feed 🚀</p>
-                <p>👉 <a href="">esiammmd/ignitefeed</a></p>
-                <p>
-                    <a href="">#nuevoproyecto</a>{' '}
-                    <a href="">#nlw</a>{' '}
-                    <a href="">#rocketseat</a>
-                </p>
+                {content.map((line, index) => {
+                    if (line.type === 'paragraph') {
+                        return <p key={index}>{line.content}</p>
+                    } else if (line.type === 'link') {
+                        return <p key={index}><a href={line.content}>{line.content}</a></p>
+                    }
+                })}
             </div>
 
             <form className={styles.commentForm}>
@@ -51,4 +63,19 @@ export function Post() {
             </div>
         </article>
     )
+}
+
+Post.propTypes = {
+    author: PropTypes.objectOf(
+        PropTypes.string,
+        PropTypes.string,
+        PropTypes.string,
+    ),
+    content: PropTypes.arrayOf(
+        PropTypes.objectOf(
+            PropTypes.string,
+            PropTypes.string,
+        )
+    ),
+    publishedAt: PropTypes.instanceOf(Date),
 }
