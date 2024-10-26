@@ -1,10 +1,22 @@
+import PropTypes from 'prop-types'
+import { useState } from 'react'
 import { ThumbsUp, Trash } from '@phosphor-icons/react'
 
 import { Avatar } from './Avatar'
 
 import styles from './Comment.module.css'
 
-export function Comment() {
+export function Comment({ content, onDeletarComment }) {
+    const [likeCount, setLikeCount] = useState(0)
+
+    function handleDeletecomment() {
+        onDeletarComment(content)
+    }
+
+    function handleLikeComment() {
+        setLikeCount(state => state + 1)
+    }
+
     return (
         <div className={styles.comment}>
             <Avatar hasBorder={false} src="https://github.com/esiammd.png" />
@@ -22,21 +34,29 @@ export function Comment() {
                             </time>
                         </div>
 
-                        <button title="Eliminar comentario">
+                        <button
+                            onClick={handleDeletecomment}
+                            title="Eliminar comentario"
+                        >
                             <Trash size={24} />
                         </button>
                     </header>
 
-                    <p>¡Conectemos!</p>
+                    <p>{content}</p>
                 </div>
 
                 <footer>
-                    <button>
+                    <button onClick={handleLikeComment}>
                         <ThumbsUp size={20} />
-                        Me gusta <span>03</span>
+                        Me gusta <span>{likeCount}</span>
                     </button>
                 </footer>
             </div>
         </div>
     )
+}
+
+Comment.propTypes = {
+    content: PropTypes.string,
+    onDeletarComment: PropTypes.func
 }

@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useState } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale/es'
 
@@ -8,7 +9,10 @@ import { Comment } from './Comment'
 import styles from './Post.module.css'
 
 export function Post({ author, content, publishedAt }) {
-    const publishedDateFormatted = format(publishedAt, "dd 'de' MMMM 'de' Y 'a las' HH:mm'h'", {
+    const [comments, setComments] = useState(["¡Muy bien!"])
+    const [newCommentText, setNewCommentText] = useState("")
+
+    const publishedDateFormatted = format(publishedAt, "dd 'de' MMMM 'de' y 'a las' HH:mm'h'", {
         locale: es
     })
 
@@ -16,6 +20,29 @@ export function Post({ author, content, publishedAt }) {
         locale: es,
         addSuffix: true
     })
+
+    function handleCreateNewComment() {
+        event.preventDefault()
+
+        setComments(state => [...state, newCommentText])
+        setNewCommentText("")
+    }
+
+    function handleNewCommentChange() {
+        event.target.setCustomValidity("")
+        setNewCommentText(event.target.value)
+    }
+
+    function handleNewCommentInvalid() {
+        event.target.setCustomValidity("¡Este campo es obligatorio!")
+    }
+
+    function deletarComment(commentToDelete) {
+        const commentsWithoutDeleteOne = comments.filter(comment => {
+            return comment !== commentToDelete
+        })
+        setComments(commentsWithoutDeleteOne)
+    }
 
     return (
         <article className={styles.post}>
@@ -38,19 +65,26 @@ export function Post({ author, content, publishedAt }) {
             </header>
 
             <div className={styles.content}>
-                {content.map((line, index) => {
-                    if (line.type === 'paragraph') {
-                        return <p key={index}>{line.content}</p>
-                    } else if (line.type === 'link') {
-                        return <p key={index}><a href={line.content}>{line.content}</a></p>
+                {content.map(line => {
+                    if (line.type === "paragraph") {
+                        return <p key={line.content}>{line.content}</p>
+                    } else if (line.type === "link") {
+                        return <p key={line}><a href={line.content}>{line.content}</a></p>
                     }
                 })}
             </div>
 
-            <form className={styles.commentForm}>
+            <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
                 <strong>Deja tus comentarios</strong>
 
-                <textarea placeholder="Escribe un comentario..." />
+                <textarea
+                    name="comment"
+                    placeholder="Escribe un comentario..."
+                    value={newCommentText}
+                    onChange={handleNewCommentChange}
+                    onInvalid={handleNewCommentInvalid}
+                    required
+                />
 
                 <footer>
                     <button type="submit">Publicar</button>
@@ -58,24 +92,29 @@ export function Post({ author, content, publishedAt }) {
             </form>
 
             <div className={styles.commentList}>
-                <Comment />
-                <Comment />
+                {comments.map(comment => (
+                    <Comment
+                        key={comment}
+                        content={comment}
+                        onDeletarComment={deletarComment}
+                    />
+                ))}
             </div>
         </article>
     )
 }
 
 Post.propTypes = {
-    author: PropTypes.objectOf(
-        PropTypes.string,
-        PropTypes.string,
-        PropTypes.string,
-    ),
+    author: PropTypes.shape({
+        avatarUrl: PropTypes.string,
+        name: PropTypes.string,
+        role: PropTypes.string,
+    }),
     content: PropTypes.arrayOf(
-        PropTypes.objectOf(
-            PropTypes.string,
-            PropTypes.string,
-        )
+        PropTypes.shape({
+            type: PropTypes.string,
+            content: PropTypes.string,
+        })
     ),
     publishedAt: PropTypes.instanceOf(Date),
 }
