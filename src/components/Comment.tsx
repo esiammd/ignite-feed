@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { ThumbsUp, Trash } from '@phosphor-icons/react'
 
@@ -6,11 +5,16 @@ import { Avatar } from './Avatar'
 
 import styles from './Comment.module.css'
 
-export function Comment({ content, onDeletarComment }) {
+interface CommentProps {
+    content: string;
+    onDeleteComment: (comment: string) => void;
+}
+
+export function Comment({ content, onDeleteComment }: CommentProps) {
     const [likeCount, setLikeCount] = useState(0)
 
     function handleDeletecomment() {
-        onDeletarComment(content)
+        onDeleteComment(content)
     }
 
     function handleLikeComment() {
@@ -54,9 +58,4 @@ export function Comment({ content, onDeletarComment }) {
             </div>
         </div>
     )
-}
-
-Comment.propTypes = {
-    content: PropTypes.string,
-    onDeletarComment: PropTypes.func
 }
